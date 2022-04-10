@@ -65,6 +65,12 @@ class Book(models.Model):
     genre = models.ManyToManyField("Genre", help_text="Select a genre for this book")
     language = models.ForeignKey("Language", on_delete=models.SET_NULL, null=True)
 
+    def display_genre(self):
+        """Create a string fot the genre, This is required to display genre in admin"""
+        return ", ".join(genre.name for genre in self.genre.all()[:3])
+
+    display_genre.short_description = "Genre"
+
     def __str__(self):
         return str(self.title)
 
@@ -98,6 +104,11 @@ class BookInstance(models.Model):
         blank=True,
         help_text="Book availablity",
     )
+
+    def display_book(self):
+        return self.book.title
+
+    display_book.short_description = "Book"
 
     class Meta:
         ordering = ["due_back"]
