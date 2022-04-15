@@ -1,11 +1,12 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import generic
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from catalog.forms import RenewBookForm
 
@@ -72,6 +73,24 @@ class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
         )
 
 
+# @login_required
+# @permission_required("catalog.can_mark_returned", raise_exception=True)
+# def borrowed_books(request):
+#     book_instance = BookInstance.objects.filter(status="o")
+
+
+class BorrowedBooksListView(
+    LoginRequiredMixin, PermissionRequiredMixin, generic.ListView
+):
+    permission_required = "catalog.can_mark_returned"
+    model = BookInstance
+    template_name = "catalog/all_borrowed_books.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(status__exact="o")
+
+
 @login_required
 @permission_required("catalog.can_mark_returned", raise_exception=True)
 def renew_book_librarian(request, pk):
@@ -101,3 +120,34 @@ def renew_book_librarian(request, pk):
     }
 
     return render(request, "catalog/book_renew_librarian.html", context)
+
+
+class AuthorCreate(CreateView):
+    model = Author
+    fields = ["first_name", "last_name", "date_of_birth", "date_of_death"]
+    initial = {"date_of_death": "11/06/2020"}
+
+
+class AuthorUpdate(UpdateView):
+    model = Author
+    fields = "__all__"
+
+
+class AuthorDelete(DeleteView):
+    model = Author
+    success_url = reverse_lazy("authors")
+
+
+class BookCreate(CreateView):
+    model = Book
+    fields = ["title", "author", "summary", "isbn", "genre", "language"]
+
+
+class BookUpdate(UpdateView):
+    model = Book
+    fields = "__all__"
+
+
+class BookDelete(DeleteView):
+    model = Book
+    success_url = reverse_lazy("books")

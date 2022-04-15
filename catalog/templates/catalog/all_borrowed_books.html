@@ -1,0 +1,8 @@
+{% extends 'base_generic.html' %} {% block content %}
+<h1>All Borrowed Books</h1>
+<ul>
+	{% for inst in bookinstance_list %}
+	<li>{{inst.book.title}} ({{inst.due_back}}) - {{inst.borrower}}</li>
+	{% endfor %}
+</ul>
+{% endblock %}
